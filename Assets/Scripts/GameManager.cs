@@ -11,10 +11,15 @@ public class GameManager : MonoBehaviour
     public int coinsPerClick = 1; // Normal coins per click.
 
     public GameObject knuckles;
-    private bool hasKnuckles = false; // Whether the player has the Knuckles upgrade.
+    private bool hasKnuckles; // Whether the player has the Knuckles upgrade.
     public int knucklesCost; // Cost to buy Knuckles.
     public float knucklesCollectInterval; // Time interval for auto collection in seconds.
     public GameObject knucklesDesc;
+    public int knucklesLevelUpCost;
+    public int knucklesLevel = 1;
+    public TextMeshProUGUI knucklesButton;
+    public TextMeshProUGUI knucklesCostText;
+    public int knucklesLevelCap = 10; // Knuckles Max Level.
 
     public GameObject tails;
     private bool hasTails; // Whether the player has the Tails upgrade.
@@ -25,12 +30,13 @@ public class GameManager : MonoBehaviour
     public float tailsIntervalMax; // Maximum time interval for multiplier activation.
     public float tailsDuration; // Duration for which the multiplier stays active
     public GameObject tailsDesc;
+    
 
     public GameObject eggman;
-    private bool hasEggman;
-    public int eggmanCost;
-    public float eggmanCollectInterval;
-    public float eggmanCollectAmount;
+    private bool hasEggman; // Whether the player has the Eggman upgrade.
+    public int eggmanCost; // Cost to buy Eggman.
+    public float eggmanCollectInterval; // Time interval for auto collection in seconds.
+    public float eggmanCollectAmount; //How much Eggman collects.
     public GameObject eggmanDesc;
 
     // Start is called before the first frame update
@@ -98,9 +104,25 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Function to enable the Knuckles upgrade.
+    // Function to enable the Knuckles upgrade and Level Up.
     public void UnlockKnuckles()
     {
+        //Level Up Knuckles
+        if (hasKnuckles && playerCoins >= knucklesLevelUpCost && knucklesLevel <= knucklesLevelCap)
+        {
+            playerCoins -= knucklesLevelUpCost;
+            UpdateCoinDisplay();
+            LevelUpKnuckles();
+        }
+        else if (hasKnuckles && playerCoins < knucklesLevelUpCost && knucklesLevel < knucklesLevelCap)
+        {
+            Debug.Log("Not enough coins!");
+        }
+        else if (knucklesLevel == knucklesLevelCap)
+        {
+            Debug.Log("Knuckles is at Max Level!");
+        }
+
         if (!hasKnuckles && playerCoins >= knucklesCost) // If the player doesn't have it already.
         {
             playerCoins -= knucklesCost;
@@ -109,14 +131,29 @@ public class GameManager : MonoBehaviour
             hasKnuckles = true;  // Enable the upgrade.
             StartCoroutine(Knuckles());  // Start auto-collecting coins.
             Debug.Log("Knuckles Unlocked!");
+            knucklesCostText.text = "Knuckles - " + knucklesLevelUpCost + " coins";
+            knucklesButton.text = "Upgrade"; //Changes Call text on Button to Upgrade.
         }
-        else if (!hasKnuckles && playerCoins <= knucklesCost)
+        else if (!hasKnuckles && playerCoins < knucklesCost)
         {
             Debug.Log("Not enough coins!");
         }
+    }
+
+    public void LevelUpKnuckles()
+    {
+        knucklesLevel += 1; // Adds one to Knuckle's Level.
+        knucklesCollectInterval -= 1; // Knuckles collects one second faster.
+        Debug.Log("Upgraded Knuckles to " + knucklesLevel);
+
+        if (knucklesLevel == knucklesLevelCap)
+        {
+            knucklesButton.text = "Max Level"; //Changes Upgrade text on Button to Max Level.
+        }
         else
         {
-            Debug.Log("Knuckles is already here!");
+            knucklesLevelUpCost *= 2; //Doubles Knuckle's Level Up Cost.
+            knucklesCostText.text = "Knuckles - " + knucklesLevelUpCost + " coins";
         }
     }
 
